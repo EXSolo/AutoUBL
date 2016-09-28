@@ -1,12 +1,16 @@
 package com.exsoloscript.ubl;
 
 import com.exsoloscript.ubl.banlist.BanList;
+import com.exsoloscript.ubl.command.UBLExemptCommand;
 import com.exsoloscript.ubl.command.UBLReloadCommand;
 import com.google.inject.Inject;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -19,6 +23,7 @@ import org.spongepowered.api.text.format.TextColors;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 @Plugin(id = "autoubl", name = "AutoUBL", version = "1.0", description = "AutoUBL Plugin for Sponge")
@@ -27,6 +32,10 @@ public class AutoUBL {
     @Inject
     @DefaultConfig(sharedRoot = false)
     private Path defaultConfig;
+
+    @Inject
+    @ConfigDir(sharedRoot = false)
+    private Path configDir;
 
     @Inject
     private Logger logger;
@@ -41,11 +50,14 @@ public class AutoUBL {
     @Inject
     private UBLReloadCommand ublReloadCommand;
 
+    @Inject
+    UBLExemptCommand ublExemptCommand;
+
     @Listener
     public void onInitialize(GameInitializationEvent event) {
         try {
             loadConfig();
-        } catch (IOException e) {
+        } catch (ObjectMappingException | IOException e) {
             this.logger.error("An error occurred while loading the config.", e);
         }
 
@@ -55,7 +67,10 @@ public class AutoUBL {
 
     }
 
-    private void loadConfig() throws IOException {
+    private void loadConfig() throws IOException, ObjectMappingException {
+        Path exempts = Paths.get(this.configDir.toString(), "exempts.conf");
+        Path bans = Paths.get(this.configDir.toString(), "bans.conf");
+
         if (Files.notExists(this.defaultConfig)) {
             Optional<Asset> defaultConfig = this.plugin.getAsset(this.plugin.getId() + ".conf");
 
@@ -66,6 +81,11 @@ public class AutoUBL {
                 this.logger.error("A default configuration file is missing. This should never happen, please contact a developer.");
             }
         }
+
+        if (Files.notExists(exempts) || Files.notExists(bans)) {
+            // Create files is they don't exist.
+            this.banList.save();
+        }
     }
 
     private void registerCommands() {
@@ -75,8 +95,16 @@ public class AutoUBL {
                 .permission("autoubl.command.reload")
                 .build();
 
+        CommandSpec ublExemptSpec = CommandSpec.builder()
+                .executor(this.ublExemptCommand)
+                .description(Text.of("Exempt an UBL'd player"))
+                .permission("autoubl.command.exempt")
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
+                .build();
+
         CommandSpec ublCommandSpec = CommandSpec.builder()
                 .child(ublReloadSpec, "reload")
+                .child(ublExemptSpec, "exempt")
                 .build();
 
         Sponge.getCommandManager().register(this.plugin, ublCommandSpec, "ubl");

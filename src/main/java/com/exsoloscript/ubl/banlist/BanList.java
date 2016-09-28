@@ -37,7 +37,7 @@ public class BanList {
         this.bans = Sets.newHashSet();
         this.exempts = Sets.newHashSet();
 
-        Path backupConfigPath = Paths.get(configDir.toString(), "ubl.bak");
+        Path backupConfigPath = Paths.get(configDir.toString(), "bans.conf");
         Path exemptConfigPath = Paths.get(configDir.toString(), "exempts.conf");
         this.backupFileManager = HoconConfigurationLoader.builder().setPath(backupConfigPath).build();
         this.exemptFileManager = HoconConfigurationLoader.builder().setPath(exemptConfigPath).build();
@@ -58,16 +58,12 @@ public class BanList {
 
     private void loadBans() throws IOException, ObjectMappingException {
         CommentedConfigurationNode banNode = backupFileManager.load();
-        TypeToken<List<BanListRecord>> token = new TypeToken<List<BanListRecord>>() {
-        };
-        this.bans = Sets.newHashSet(banNode.getNode("bans").getValue(token));
+        this.bans = Sets.newHashSet(banNode.getNode("bans").getList(TypeToken.of(BanListRecord.class)));
     }
 
     private void loadExempts() throws IOException, ObjectMappingException {
-        CommentedConfigurationNode exemptNode = backupFileManager.load();
-        TypeToken<List<UUID>> token = new TypeToken<List<UUID>>() {
-        };
-        this.exempts = Sets.newHashSet(exemptNode.getNode("exempts").getValue(token));
+        CommentedConfigurationNode exemptNode = exemptFileManager.load();
+        this.exempts = Sets.newHashSet(exemptNode.getNode("exempts").getList(TypeToken.of(UUID.class)));
     }
 
     public void save() throws IOException, ObjectMappingException {
