@@ -61,6 +61,11 @@ public class BanList {
         });
     }
 
+    public void schedule() {
+
+        this.updater.cancel();
+    }
+
     public void load() throws IOException, ObjectMappingException {
         this.loadBans();
         this.loadExempts();

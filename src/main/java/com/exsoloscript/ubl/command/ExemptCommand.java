@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.util.function.BiFunction;
 
 @Singleton
-public class UBLUnexemptCommand implements CommandExecutor {
+public class ExemptCommand implements CommandExecutor {
+
     @Inject
     private BanList banList;
 
@@ -37,11 +38,11 @@ public class UBLUnexemptCommand implements CommandExecutor {
             @Override
             public Void apply(GameProfile profile, Throwable throwable) {
                 try {
-                    UBLUnexemptCommand.this.banList.unexempt(profile.getUniqueId());
-                    src.sendMessage(Text.of("Player " + profile.getName().get() + " was unexempted successfully."));
+                    ExemptCommand.this.banList.exempt(profile.getUniqueId());
+                    src.sendMessage(Text.of("Player " + profile.getName().get() + " was exempted successfully."));
                 } catch (IOException | ObjectMappingException e) {
-                    src.sendMessage(Text.builder("An error occurred while unexempting the player").color(TextColors.RED).build());
-                    UBLUnexemptCommand.this.logger.error("An exception occurred while exempting a player", e);
+                    src.sendMessage(Text.builder("An error occurred while exempting the player").color(TextColors.RED).build());
+                    ExemptCommand.this.logger.error("An exception occurred while exempting a player", e);
                 }
                 return null;
             }

@@ -1,10 +1,10 @@
 package com.exsoloscript.ubl;
 
 import com.exsoloscript.ubl.banlist.BanList;
-import com.exsoloscript.ubl.command.UBLExemptCommand;
-import com.exsoloscript.ubl.command.UBLReloadCommand;
-import com.exsoloscript.ubl.command.UBLUnexemptCommand;
-import com.exsoloscript.ubl.command.UBLUpdateCommand;
+import com.exsoloscript.ubl.command.ExemptCommand;
+import com.exsoloscript.ubl.command.ReloadCommand;
+import com.exsoloscript.ubl.command.UnexemptCommand;
+import com.exsoloscript.ubl.command.UpdateCommand;
 import com.exsoloscript.ubl.listener.LoginListener;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -20,8 +20,6 @@ import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColor;
-import org.spongepowered.api.text.format.TextColors;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,16 +49,16 @@ public class AutoUBL {
 
     // Command executors
     @Inject
-    private UBLReloadCommand ublReloadCommand;
+    private ReloadCommand reloadCommand;
 
     @Inject
-    private UBLExemptCommand ublExemptCommand;
+    private ExemptCommand exemptCommand;
 
     @Inject
-    private UBLUnexemptCommand ublUnexemptCommand;
+    private UnexemptCommand unexemptCommand;
 
     @Inject
-    private UBLUpdateCommand ublUpdateCommand;
+    private UpdateCommand ublUpdateCommand;
 
     // event listeners
 
@@ -109,20 +107,20 @@ public class AutoUBL {
 
     private void registerCommands() {
         CommandSpec ublReloadSpec = CommandSpec.builder()
-                .executor(this.ublReloadCommand)
+                .executor(this.reloadCommand)
                 .description(Text.of("Reload the UBL from a backup file"))
                 .permission("autoubl.command.reload")
                 .build();
 
         CommandSpec ublExemptSpec = CommandSpec.builder()
-                .executor(this.ublExemptCommand)
+                .executor(this.exemptCommand)
                 .description(Text.of("Exempt a player"))
                 .permission("autoubl.command.exempt")
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
                 .build();
 
         CommandSpec ublUnexemptSpec = CommandSpec.builder()
-                .executor(this.ublUnexemptCommand)
+                .executor(this.unexemptCommand)
                 .description(Text.of("Unexempt a player"))
                 .permission("autoubl.command.unexempt")
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))

@@ -11,15 +11,11 @@ import org.spongepowered.api.profile.GameProfile;
 @Singleton
 public class LoginListener {
 
+    @Inject
     private BanList banList;
-    private Logger logger;
-    private String kickMessage;
 
     @Inject
-    public LoginListener(BanList banList, Logger logger) {
-        this.banList = banList;
-        this.logger = logger;
-    }
+    private Logger logger;
 
     @Listener
     public void onClientLogin(ClientConnectionEvent.Login event) {
