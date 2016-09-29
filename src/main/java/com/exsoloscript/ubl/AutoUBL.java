@@ -3,6 +3,9 @@ package com.exsoloscript.ubl;
 import com.exsoloscript.ubl.banlist.BanList;
 import com.exsoloscript.ubl.command.UBLExemptCommand;
 import com.exsoloscript.ubl.command.UBLReloadCommand;
+import com.exsoloscript.ubl.command.UBLUnexemptCommand;
+import com.exsoloscript.ubl.command.UBLUpdateCommand;
+import com.exsoloscript.ubl.listener.LoginListener;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.slf4j.Logger;
@@ -51,7 +54,18 @@ public class AutoUBL {
     private UBLReloadCommand ublReloadCommand;
 
     @Inject
-    UBLExemptCommand ublExemptCommand;
+    private UBLExemptCommand ublExemptCommand;
+
+    @Inject
+    private UBLUnexemptCommand ublUnexemptCommand;
+
+    @Inject
+    private UBLUpdateCommand ublUpdateCommand;
+
+    // event listeners
+
+    @Inject
+    private LoginListener loginListener;
 
     @Listener
     public void onInitialize(GameInitializationEvent event) {
@@ -62,6 +76,7 @@ public class AutoUBL {
         }
 
         registerCommands();
+        registerListeners();
 
         this.banList.update();
 
@@ -88,6 +103,10 @@ public class AutoUBL {
         }
     }
 
+    private void registerListeners() {
+        Sponge.getEventManager().registerListeners(this, this.loginListener);
+    }
+
     private void registerCommands() {
         CommandSpec ublReloadSpec = CommandSpec.builder()
                 .executor(this.ublReloadCommand)
@@ -97,24 +116,31 @@ public class AutoUBL {
 
         CommandSpec ublExemptSpec = CommandSpec.builder()
                 .executor(this.ublExemptCommand)
-                .description(Text.of("Exempt an UBL'd player"))
+                .description(Text.of("Exempt a player"))
                 .permission("autoubl.command.exempt")
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
+                .build();
+
+        CommandSpec ublUnexemptSpec = CommandSpec.builder()
+                .executor(this.ublUnexemptCommand)
+                .description(Text.of("Unexempt a player"))
+                .permission("autoubl.command.unexempt")
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
+                .build();
+
+        CommandSpec ublUpdateSpec = CommandSpec.builder()
+                .executor(this.ublUpdateCommand)
+                .description(Text.of("Reload the ban list from the configured URL"))
+                .permission("autoubl.command.update")
                 .build();
 
         CommandSpec ublCommandSpec = CommandSpec.builder()
                 .child(ublReloadSpec, "reload")
                 .child(ublExemptSpec, "exempt")
+                .child(ublUnexemptSpec, "unexempt")
+                .child(ublUpdateSpec, "update")
                 .build();
 
         Sponge.getCommandManager().register(this.plugin, ublCommandSpec, "ubl");
-    }
-
-    public static Text prefix() {
-        return Text.builder("[").color(TextColors.AQUA)
-                .append(
-                        Text.builder("AutoUBL").color(TextColors.GOLD).build(),
-                        Text.builder("] ").color(TextColors.AQUA).build())
-                .build();
     }
 }
