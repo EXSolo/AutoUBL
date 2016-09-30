@@ -37,12 +37,21 @@ public class ExemptCommand implements CommandExecutor {
         profileManager.get(playerName, false).handleAsync(new BiFunction<GameProfile, Throwable, Void>() {
             @Override
             public Void apply(GameProfile profile, Throwable throwable) {
-                try {
-                    ExemptCommand.this.banList.exempt(profile.getUniqueId());
-                    src.sendMessage(Text.of("Player " + profile.getName().get() + " was exempted successfully."));
-                } catch (IOException | ObjectMappingException e) {
-                    src.sendMessage(Text.builder("An error occurred while exempting the player").color(TextColors.RED).build());
-                    ExemptCommand.this.logger.error("An exception occurred while exempting a player", e);
+                if (throwable == null) {
+                    try {
+                        boolean exempted = ExemptCommand.this.banList.exempt(profile.getUniqueId());
+                        if (exempted) {
+                            src.sendMessage(Text.of("Player " + profile.getName().get() + " was exempted successfully."));
+                        } else {
+                            src.sendMessage(Text.of("Player " + profile.getName().get() + " is already on the exempt list."));
+                        }
+                    } catch (IOException | ObjectMappingException e) {
+                        src.sendMessage(Text.builder("An error occurred while exempting the player").color(TextColors.RED).build());
+                        ExemptCommand.this.logger.error("An exception occurred while exempting a player", e);
+                    }
+                } else {
+                    src.sendMessage(Text.builder("An error occurred while exempting the player. Did you specify the player's name correctly?").color(TextColors.RED).build());
+                    ExemptCommand.this.logger.warn("Couldn't get the UUID for player '" + profile.getName().get() + "'. Name was probably spelled wrong");
                 }
                 return null;
             }

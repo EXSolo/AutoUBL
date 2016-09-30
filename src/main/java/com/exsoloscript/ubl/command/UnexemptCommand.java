@@ -36,12 +36,21 @@ public class UnexemptCommand implements CommandExecutor {
         profileManager.get(playerName, false).handleAsync(new BiFunction<GameProfile, Throwable, Void>() {
             @Override
             public Void apply(GameProfile profile, Throwable throwable) {
-                try {
-                    UnexemptCommand.this.banList.unexempt(profile.getUniqueId());
-                    src.sendMessage(Text.of("Player " + profile.getName().get() + " was unexempted successfully."));
-                } catch (IOException | ObjectMappingException e) {
-                    src.sendMessage(Text.builder("An error occurred while unexempting the player").color(TextColors.RED).build());
-                    UnexemptCommand.this.logger.error("An exception occurred while exempting a player", e);
+                if (throwable == null) {
+                    try {
+                        boolean unexempted = UnexemptCommand.this.banList.exempt(profile.getUniqueId());
+                        if (unexempted) {
+                            src.sendMessage(Text.of("Player " + profile.getName().get() + " was unexempted successfully."));
+                        } else {
+                            src.sendMessage(Text.of("Player " + profile.getName().get() + " is not on the exempt list."));
+                        }
+                    } catch (IOException | ObjectMappingException e) {
+                        src.sendMessage(Text.builder("An error occurred while unexempting the player").color(TextColors.RED).build());
+                        UnexemptCommand.this.logger.error("An exception occurred while exempting a player", e);
+                    }
+                } else {
+                    src.sendMessage(Text.builder("An error occurred while exempting the player. Did you specify the player's name correctly?").color(TextColors.RED).build());
+                    UnexemptCommand.this.logger.warn("Couldn't get the UUID for player '" + profile.getName().get() + "'. Name was probably spelled wrong");
                 }
                 return null;
             }
