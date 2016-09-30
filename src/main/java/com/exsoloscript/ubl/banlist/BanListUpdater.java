@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * If the ban-list server is not available, it will be reloaded from backup
  *
- * @author XHawk87
  * @author EXSolo
  */
 @Singleton
