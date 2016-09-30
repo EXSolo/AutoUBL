@@ -62,8 +62,12 @@ public class BanList {
     }
 
     public void schedule() {
-
         this.updater.cancel();
+        this.updater.schedule(profiles -> {
+            this.bans.clear();
+            this.bans.addAll(profiles);
+            this.saveBans();
+        });
     }
 
     public void load() throws IOException, ObjectMappingException {

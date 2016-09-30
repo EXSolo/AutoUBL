@@ -60,7 +60,7 @@ public class AutoUBL {
     @Inject
     private UpdateCommand ublUpdateCommand;
 
-    // event listeners
+    // Event listeners
 
     @Inject
     private LoginListener loginListener;
@@ -76,8 +76,7 @@ public class AutoUBL {
         registerCommands();
         registerListeners();
 
-        this.banList.update();
-
+        loadBanList();
     }
 
     private void loadConfig() throws IOException, ObjectMappingException {
@@ -99,6 +98,13 @@ public class AutoUBL {
             // Create files is they don't exist.
             this.banList.save();
         }
+    }
+
+    private void loadBanList() {
+        // Update the ban list when the server starts
+        this.banList.update();
+        // Start scheduler that updates the backup file over time.
+        this.banList.schedule();
     }
 
     private void registerListeners() {

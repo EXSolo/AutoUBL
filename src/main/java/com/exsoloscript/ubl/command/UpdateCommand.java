@@ -24,7 +24,6 @@ public class UpdateCommand implements CommandExecutor {
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         this.banList.update();
         src.sendMessage(Text.of("Checking the UBL for updates."));
-        this.logger.info("Fetching new ban list from the given URL.");
 
         return CommandResult.success();
     }

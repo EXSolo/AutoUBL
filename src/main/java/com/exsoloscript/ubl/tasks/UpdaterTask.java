@@ -37,6 +37,8 @@ public class UpdaterTask implements Runnable {
 
         Response response = null;
 
+        this.logger.info("Requesting newest version of the UBL.");
+
         try {
             response = client.newCall(requestBuilder.build()).execute();
         } catch (IOException e) {

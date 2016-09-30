@@ -42,26 +42,34 @@ public class BanListUpdater {
     /**
      * Schedule regular updates
      *
-     * @param interval How often to update
+     * @param callback Called after every interval
      */
-    public void schedule(long interval, TimeUnit unit, UpdaterTaskCallback callback) {
+    public void schedule(UpdaterTaskCallback callback) {
         // Stop the current updater from running
         cancel();
 
         CommentedConfigurationNode rootNode = loadNode();
-        String banListUrl = rootNode.getNode("banlist-url").getString();
-        int timeoutSeconds = rootNode.getNode("timeout").getInt();
+        long interval = rootNode.getNode("auto-check-interval").getLong();
 
-        // Schedule the updater to run asynchronously with the new interval
-        UpdaterTask updaterTask = new UpdaterTask(banListUrl, timeoutSeconds, logger, callback);
-        Task.Builder taskBuilder = Sponge.getScheduler().createTaskBuilder();
-        this.autoChecker = taskBuilder.execute(updaterTask)
-                .async().interval(interval, unit)
-                .delay(interval, unit).submit(this.plugin);
+        if (interval > 0) {
+            String banListUrl = rootNode.getNode("banlist-url").getString();
+            int timeoutSeconds = rootNode.getNode("timeout").getInt();
+
+            // Schedule the updater to run asynchronously with the new interval
+            UpdaterTask updaterTask = new UpdaterTask(banListUrl, timeoutSeconds, logger, callback);
+            Task.Builder taskBuilder = Sponge.getScheduler().createTaskBuilder();
+            this.autoChecker = taskBuilder.execute(updaterTask)
+                    .async().interval(interval, TimeUnit.MINUTES)
+                    .delay(interval, TimeUnit.MINUTES).submit(this.plugin);
+        } else {
+            this.logger.info("Ban list scheduler interval is not positive. Stopping scheduler...");
+        }
     }
 
     /**
      * Schedule an immediate update
+     *
+     * @param callback Called after the request is done
      */
     public void download(UpdaterTaskCallback callback) {
         CommentedConfigurationNode rootNode = loadNode();

@@ -16,13 +16,8 @@ import java.io.IOException;
 @Singleton
 public class ReloadCommand implements CommandExecutor {
 
-
-    private BanList banList;
-
     @Inject
-    public ReloadCommand(BanList banList) {
-        this.banList = banList;
-    }
+    private BanList banList;
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
